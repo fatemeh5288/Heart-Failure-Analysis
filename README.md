@@ -24,6 +24,7 @@ HeartDisease: output class [1: heart disease, 0: Normal]Source
 
 Steps of data cleaning and visualization:
 This data needed minimum cleaning. I changed cp, slope, and thal to dummy variables since they are not ordinal in nature. They are just different types, that should not be numerically ordered, hence converted to dummies.
+**some png files are attached to take a look at data distribution with different variables
 
 Training the dataset:
 Data was split into train and test set and different classification algorithms were applied. 
