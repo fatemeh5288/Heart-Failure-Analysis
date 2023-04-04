@@ -1,0 +1,81 @@
+importing libraries:
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+reading the csv file from folder in my PC:
+
+df=pd.read_csv('C:/Users/fatem/anaconda3/heart.csv')
+
+taking a deeper look into data to see any modifications is needed:
+
+df.isnull().sum().sort_values(ascending=False)      # if there is any null value that needs to be addressed
+df.shape
+df['target'].value_counts()                         # if target is imbalanced
+
+some visulaization to understand data better:
+
+sns.countplot(x=df['target'])
+sns.heatmap(df,annot=True,fmt='.2g')
+pd.crosstab(df['age'],df['target']).plot(kind='bar',figsize=(10,6))
+plt.ylabel('frequency')
+pd.crosstab(df['sex'],df['target']).plot(kind='bar')
+plt.xlabel('male=0, female=1')
+plt.ylabel('frequency')
+sns.scatterplot(x='age',y='thalach',data=df,hue='target')
+plt.ylabel('max heart rate')
+
+converting cp, thal, and slope to dummy variables:
+
+df=pd.get_dummies(data=df, columns=['cp','slope','thal'])
+
+time to train the data:
+
+y=df['target']
+x=df.drop('target',axis=1)
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2,random_state=42)
+
+logistic regression:
+model_lg=LogisticRegression(solver='liblinear').fit(x_train,y_train)
+y_test_pred=model_lg.predict(x_test)
+from sklearn.metrics import confusion_matrix
+sns.heatmap(confusion_matrix(y_test,y_test_pred),annot=True)     #plot confusion matrix to check performance:
+metrics.accuracy_score(y_test,y_test_pred)
+
+k-nearest neighbors:
+from sklearn.neighbors import KNeighborsClassifier
+model_nb=KNeighborsClassifier(n_neighbors=10,algorithm='ball_tree').fit(x_train,y_train)
+y_test_pred_nb=model_nb.predict(x_test)
+sns.heatmap(confusion_matrix(y_test,y_test_pred_nb),annot=True,fmt='.2g')
+
+score = []                                                                #find optimal n_neighbors
+
+from sklearn import metrics
+for i in range(1,20):
+    neigh = KNeighborsClassifier(n_neighbors = i).fit(x_train,y_train)
+    
+    score.append(neigh.score(x_test, y_test))
+    
+plt.figure(figsize=(10,6))
+plt.plot(range(1,20),score)
+plt.title('score vs. K Value')
+plt.xlabel('K')
+plt.ylabel('score')
+print('maximum score:',max(score),'at','k:',score.index(max(score)))
+
+SVM and Decision tree:
+
+from sklearn import svm
+model_svm=svm.SVC(kernel='linear').fit(x_train,y_train)
+y_test_pred_svm=model_svm.predict(x_test)
+sns.heatmap(confusion_matrix(y_test,y_test_pred_svm),annot=True)
+
+from sklearn.tree import DecisionTreeClassifier
+model_dt=DecisionTreeClassifier().fit(x_train,y_train)
+y_test_pred_dt=model_dt.predict(x_test)
+sns.heatmap(confusion_matrix(y_test,y_test_pred_dt),annot=True)
+
